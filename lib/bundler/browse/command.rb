@@ -10,13 +10,13 @@ module Bundler
       def exec(command_name, args)
         ui = UI.new
         updater = Updater.new
-        
+
         direct_dependency_names = Bundler.definition.dependencies.map(&:name).to_set
-        
+
         gems = Bundler.definition.specs.select do |spec|
           direct_dependency_names.include?(spec.name)
         end
-        
+
         ui.run(gems, updater)
       rescue StandardError => e
         Bundler.ui.error "Error: #{e.message}"
