@@ -2,6 +2,8 @@
 
 An interactive Bundler plugin that allows you to browse gems in your Gemfile, view their details, open their repositories, and update them individually.
 
+<img width="1440" height="789" alt="image" src="https://github.com/user-attachments/assets/e8b9cf49-5776-4f83-82d4-3adf2f5696e5" />
+
 ## Keyboard shortcuts:
   - `↑/↓/j/k`: Navigate through gems
   - `h`: Open homepage
