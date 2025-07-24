@@ -32,14 +32,8 @@ Gem::Specification.new do |spec|
   spec.require_paths = ["lib"]
 
   # Runtime dependencies
-  spec.add_dependency "tty-prompt", "~> 0.23"
-  spec.add_dependency "tty-cursor", "~> 0.7"
-  spec.add_dependency "tty-screen", "~> 0.8"
   spec.add_dependency "launchy", "~> 3.1"
-  
-  # Development dependencies
-  spec.add_development_dependency "webmock", "~> 3.25"
-
-  # For more information and examples about making a new gem, check out our
-  # guide at: https://bundler.io/guides/creating_gem.html
+  spec.add_dependency "tty-cursor", "~> 0.7"
+  spec.add_dependency "tty-prompt", "~> 0.23"
+  spec.add_dependency "tty-screen", "~> 0.8"
 end
