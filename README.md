@@ -2,10 +2,10 @@
 
 An interactive Bundler plugin that allows you to browse gems in your Gemfile, view their details, open their repositories, and update them individually.
 
-## Keyboard shortcuts**:
-  - `↑/↓`: Navigate through gems
+## Keyboard shortcuts:
+  - `↑/↓/j/k`: Navigate through gems
   - `h`: Open homepage
-  - `Enter`: Open source repository
+  - `s`: Open source repository
   - `u`: Update the selected gem (with confirmation)
   - `q`: Quit
 
@@ -29,7 +29,7 @@ This will display an interactive list of all gems directly specified in your Gem
 
 ## Development
 
-After checking out the repo, run `bin/setup` to install dependencies. Then, run `rake test` to run the tests.
+After checking out the repo, run `bin/setup` to install dependencies.
 
 To test the plugin locally:
 
