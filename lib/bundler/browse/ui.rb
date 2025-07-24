@@ -12,6 +12,7 @@ module Bundler
         @cursor = TTY::Cursor
         @selected_index = 0
         @gems = []
+        @viewport_offset = 0
       end
 
       def run(gems, updater)
@@ -33,29 +34,65 @@ module Bundler
 
       private
 
+      def calculate_viewport_dimensions
+        header_lines = 2  # "Gems in Gemfile:" + separator
+        footer_lines = 9  # gem info (5) + separator (1) + controls (1) + separators (2)
+        available_lines = TTY::Screen.height - header_lines - footer_lines
+        [available_lines, 5].max  # Minimum 5 lines for gem list
+      end
+
+      def update_viewport_offset(available_lines)
+        if @selected_index < @viewport_offset
+          @viewport_offset = @selected_index
+        elsif @selected_index >= @viewport_offset + available_lines
+          @viewport_offset = @selected_index - available_lines + 1
+        end
+      end
+
+      def render_header
+        puts "Gems in Gemfile:"
+        puts "─" * TTY::Screen.width
+      end
+
+      def render_gem_list
+        available_lines = calculate_viewport_dimensions
+        update_viewport_offset(available_lines)
+
+        visible_gems = @gems[@viewport_offset, available_lines]
+        visible_gems.each_with_index do |gem, index|
+          actual_index = @viewport_offset + index
+          prefix = actual_index == @selected_index ? "▶ " : "  "
+          puts "#{prefix}#{gem.name} (#{gem.version})"
+        end
+
+        # Fill remaining lines
+        (available_lines - visible_gems.size).times { puts }
+
+        render_scroll_indicator if @gems.size > available_lines
+      end
+
+      def render_scroll_indicator
+        indicator = " [#{@selected_index + 1}/#{@gems.size}]"
+        print @cursor.save
+        print @cursor.move_to(TTY::Screen.width - indicator.length, 2)
+        print indicator
+        print @cursor.restore
+      end
+
+      def render_footer
+        puts "─" * TTY::Screen.width
+        render_gem_info(@gems[@selected_index]) if @selected_gem = @gems[@selected_index]
+        puts "─" * TTY::Screen.width
+        puts "[↑↓/jk] Navigate  [h] Homepage  [Enter] Source  [u] Update  [q] Quit"
+      end
+
       def render_ui
         print @cursor.move_to(0, 0)
         print @cursor.clear_screen_down
 
-        puts "Gems in Gemfile:"
-        puts "─" * TTY::Screen.width
-
-        # Render gem list
-        @gems.each_with_index do |gem, index|
-          if index == @selected_index
-            print "▶ "
-          else
-            print "  "
-          end
-          puts "#{gem.name} (#{gem.version})"
-        end
-
-        puts "─" * TTY::Screen.width
-
-        render_gem_info(@selected_gem) if @selected_gem = @gems[@selected_index]
-
-        puts "─" * TTY::Screen.width
-        puts "[↑↓] Navigate  [h] Homepage  [Enter] Source  [u] Update  [q] Quit"
+        render_header
+        render_gem_list
+        render_footer
       end
 
       def render_gem_info(gem)
@@ -76,9 +113,9 @@ module Bundler
 
       def handle_input
         case read_key
-        when "\e[A"
+        when "\e[A", "k"  # Up arrow or k
           @selected_index = (@selected_index - 1) % @gems.size
-        when "\e[B"
+        when "\e[B", "j"  # Down arrow or j
           @selected_index = (@selected_index + 1) % @gems.size
         when "\r" # Enter
           open_source(@gems[@selected_index])
