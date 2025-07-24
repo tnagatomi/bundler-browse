@@ -19,6 +19,8 @@ module Bundler
         @gems = gems
         @updater = updater
 
+        # Enter alternate screen buffer
+        print "\e[?1049h"
         print @cursor.clear_screen
         print @cursor.hide
 
@@ -28,11 +30,19 @@ module Bundler
             handle_input
           end
         ensure
-          print @cursor.show
+          cleanup_screen
         end
       end
 
       private
+
+      def cleanup_screen
+        print @cursor.show
+        print @cursor.clear_screen
+        print @cursor.move_to(0, 0)
+        # Leave alternate screen buffer
+        print "\e[?1049l"
+      end
 
       def calculate_viewport_dimensions
         header_lines = 2  # "Gems in Gemfile:" + separator
@@ -83,7 +93,7 @@ module Bundler
         puts "─" * TTY::Screen.width
         render_gem_info(@gems[@selected_index]) if @selected_gem = @gems[@selected_index]
         puts "─" * TTY::Screen.width
-        puts "[↑↓/jk] Navigate  [h] Homepage  [Enter] Source  [u] Update  [q] Quit"
+        puts "[↑↓/jk] Navigate  [h] Homepage  [s] Source  [u] Update  [q] Quit"
       end
 
       def render_ui
@@ -117,16 +127,14 @@ module Bundler
           @selected_index = (@selected_index - 1) % @gems.size
         when "\e[B", "j"  # Down arrow or j
           @selected_index = (@selected_index + 1) % @gems.size
-        when "\r" # Enter
-          open_source(@gems[@selected_index])
         when "h"
           open_homepage(@gems[@selected_index])
+        when "s"
+          open_source(@gems[@selected_index])
         when "u"
           update_gem(@gems[@selected_index])
         when "q", "\u0003" # q or Ctrl+C
-          print @cursor.clear_screen
-          print @cursor.move_to(0, 0)
-          print @cursor.show
+          cleanup_screen
           exit
         end
       end
